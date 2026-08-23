@@ -4,7 +4,7 @@ import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
 
-// TODO: Добавить guard admin
+// TODO: Р”РѕР±Р°РІРёС‚СЊ guard admin
 // eslint-disable-next-line max-len
 // Get GET /customers?page=2&limit=5&sort=totalAmount&order=desc&registrationDateFrom=2023-01-01&registrationDateTo=2023-12-31&lastOrderDateFrom=2023-01-01&lastOrderDateTo=2023-12-31&totalAmountFrom=100&totalAmountTo=1000&orderCountFrom=1&orderCountTo=10
 export const getCustomers = async (
@@ -153,7 +153,7 @@ export const getCustomers = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р”РѕР±Р°РІРёС‚СЊ guard admin
 // Get /customers/:id
 export const getCustomerById = async (
     req: Request,
@@ -171,7 +171,7 @@ export const getCustomerById = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р”РѕР±Р°РІРёС‚СЊ guard admin
 // Patch /customers/:id
 export const updateCustomer = async (
     req: Request,
@@ -179,17 +179,19 @@ export const updateCustomer = async (
     next: NextFunction
 ) => {
     try {
+        const { name, email, phone } = req.body
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            { name, email, phone },
             {
                 new: true,
+                runValidators: true,
             }
         )
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Пользователь по заданному id отсутствует в базе'
+                        'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
             .populate(['orders', 'lastOrder'])
@@ -199,7 +201,7 @@ export const updateCustomer = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р”РѕР±Р°РІРёС‚СЊ guard admin
 // Delete /customers/:id
 export const deleteCustomer = async (
     req: Request,
@@ -210,7 +212,7 @@ export const deleteCustomer = async (
         const deletedUser = await User.findByIdAndDelete(req.params.id).orFail(
             () =>
                 new NotFoundError(
-                    'Пользователь по заданному id отсутствует в базе'
+                    'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                 )
         )
         res.status(200).json(deletedUser)

@@ -31,13 +31,8 @@ export const getOrders = async (
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
-        if (status) {
-            if (typeof status === 'object') {
-                Object.assign(filters, status)
-            }
-            if (typeof status === 'string') {
-                filters.status = status
-            }
+        if (typeof status === 'string') {
+            filters.status = status
         }
 
         if (totalAmountFrom) {
@@ -178,14 +173,14 @@ export const getOrdersCurrentUser = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
+                        'Р СџР С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЉ Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
 
         let orders = user.orders as unknown as IOrder[]
 
         if (search) {
-            // РµСЃР»Рё РЅРµ СЌРєСЂР°РЅРёСЂРѕРІР°С‚СЊ С‚Рѕ РїРѕР»СѓС‡Р°РµРј Invalid regular expression: /+1/i: Nothing to repeat
+            // Р ВµРЎРѓР В»Р С‘ Р Р…Р Вµ РЎРЊР С”РЎР‚Р В°Р Р…Р С‘РЎР‚Р С•Р Р†Р В°РЎвЂљРЎРЉ РЎвЂљР С• Р С—Р С•Р В»РЎС“РЎвЂЎР В°Р ВµР С Invalid regular expression: /+1/i: Nothing to repeat
             const searchRegex = new RegExp(search as string, 'i')
             const searchNumber = Number(search)
             const products = await Product.find({ title: searchRegex })
@@ -238,13 +233,13 @@ export const getOrderByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
+                        'Р вЂ”Р В°Р С”Р В°Р В· Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID Р В·Р В°Р С”Р В°Р В·Р В°'))
         }
         return next(error)
     }
@@ -264,19 +259,19 @@ export const getOrderCurrentUserByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
+                        'Р вЂ”Р В°Р С”Р В°Р В· Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
         if (!order.customer._id.equals(userId)) {
-            // Р•СЃР»Рё РЅРµС‚ РґРѕСЃС‚СѓРїР° РЅРµ РІРѕР·РІСЂР°С‰Р°РµРј 403, Р° РѕС‚РґР°РµРј 404
+            // Р вЂўРЎРѓР В»Р С‘ Р Р…Р ВµРЎвЂљ Р Т‘Р С•РЎРѓРЎвЂљРЎС“Р С—Р В° Р Р…Р Вµ Р Р†Р С•Р В·Р Р†РЎР‚Р В°РЎвЂ°Р В°Р ВµР С 403, Р В° Р С•РЎвЂљР Т‘Р В°Р ВµР С 404
             return next(
-                new NotFoundError('Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ')
+                new NotFoundError('Р вЂ”Р В°Р С”Р В°Р В· Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ')
             )
         }
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID Р В·Р В°Р С”Р В°Р В·Р В°'))
         }
         return next(error)
     }
@@ -298,16 +293,16 @@ export const createOrder = async (
         items.forEach((id: Types.ObjectId) => {
             const product = products.find((p) => p._id.equals(id))
             if (!product) {
-                throw new BadRequestError(`РўРѕРІР°СЂ СЃ id ${id} РЅРµ РЅР°Р№РґРµРЅ`)
+                throw new BadRequestError(`Р СћР С•Р Р†Р В°РЎР‚ РЎРѓ id ${id} Р Р…Р Вµ Р Р…Р В°Р в„–Р Т‘Р ВµР Р…`)
             }
             if (product.price === null) {
-                throw new BadRequestError(`РўРѕРІР°СЂ СЃ id ${id} РЅРµ РїСЂРѕРґР°РµС‚СЃСЏ`)
+                throw new BadRequestError(`Р СћР С•Р Р†Р В°РЎР‚ РЎРѓ id ${id} Р Р…Р Вµ Р С—РЎР‚Р С•Р Т‘Р В°Р ВµРЎвЂљРЎРѓРЎРЏ`)
             }
             return basket.push(product)
         })
         const totalBasket = basket.reduce((a, c) => a + c.price, 0)
         if (totalBasket !== total) {
-            return next(new BadRequestError('РќРµРІРµСЂРЅР°СЏ СЃСѓРјРјР° Р·Р°РєР°Р·Р°'))
+            return next(new BadRequestError('Р СњР ВµР Р†Р ВµРЎР‚Р Р…Р В°РЎРЏ РЎРѓРЎС“Р СР СР В° Р В·Р В°Р С”Р В°Р В·Р В°'))
         }
 
         const sanitizedComment = sanitizeHtml(comment || '', {
@@ -353,7 +348,7 @@ export const updateOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
+                        'Р вЂ”Р В°Р С”Р В°Р В· Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
             .populate(['customer', 'products'])
@@ -363,7 +358,7 @@ export const updateOrder = async (
             return next(new BadRequestError(error.message))
         }
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID Р В·Р В°Р С”Р В°Р В·Р В°'))
         }
         return next(error)
     }
@@ -380,14 +375,14 @@ export const deleteOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
+                        'Р вЂ”Р В°Р С”Р В°Р В· Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
             .populate(['customer', 'products'])
         return res.status(200).json(deletedOrder)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID Р В·Р В°Р С”Р В°Р В·Р В°'))
         }
         return next(error)
     }

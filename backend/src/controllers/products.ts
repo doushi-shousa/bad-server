@@ -42,7 +42,7 @@ const createProduct = async (
     try {
         const { description, category, price, title, image } = req.body
 
-        // Переносим картинку из временной папки
+        // Р СџР ВµРЎР‚Р ВµР Р…Р С•РЎРѓР С‘Р С Р С”Р В°РЎР‚РЎвЂљР С‘Р Р…Р С”РЎС“ Р С‘Р В· Р Р†РЎР‚Р ВµР СР ВµР Р…Р Р…Р С•Р в„– Р С—Р В°Р С—Р С”Р С‘
         if (image) {
             movingFile(
                 image.fileName,
@@ -65,14 +65,14 @@ const createProduct = async (
         }
         if (error instanceof Error && error.message.includes('E11000')) {
             return next(
-                new ConflictError('Товар с таким заголовком уже существует')
+                new ConflictError('Р СћР С•Р Р†Р В°РЎР‚ РЎРѓ РЎвЂљР В°Р С”Р С‘Р С Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С”Р С•Р С РЎС“Р В¶Р Вµ РЎРѓРЎС“РЎвЂ°Р ВµРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ')
             )
         }
         return next(error)
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // PUT /product
 const updateProduct = async (
     req: Request,
@@ -81,9 +81,9 @@ const updateProduct = async (
 ) => {
     try {
         const { productId } = req.params
-        const { image } = req.body
+        const { description, category, price, title, image } = req.body
 
-        // Переносим картинку из временной папки
+        // Р СџР ВµРЎР‚Р ВµР Р…Р С•РЎРѓР С‘Р С Р С”Р В°РЎР‚РЎвЂљР С‘Р Р…Р С”РЎС“ Р С‘Р В· Р Р†РЎР‚Р ВµР СР ВµР Р…Р Р…Р С•Р в„– Р С—Р В°Р С—Р С”Р С‘
         if (image) {
             movingFile(
                 image.fileName,
@@ -96,31 +96,33 @@ const updateProduct = async (
             productId,
             {
                 $set: {
-                    ...req.body,
-                    price: req.body.price ? req.body.price : null,
-                    image: req.body.image ? req.body.image : undefined,
+                    description,
+                    category,
+                    title,
+                    price: price ?? null,
+                    image: image || undefined,
                 },
             },
             { runValidators: true, new: true }
-        ).orFail(() => new NotFoundError('Нет товара по заданному id'))
+        ).orFail(() => new NotFoundError('Р СњР ВµРЎвЂљ РЎвЂљР С•Р Р†Р В°РЎР‚Р В° Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id'))
         return res.send(product)
     } catch (error) {
         if (error instanceof MongooseError.ValidationError) {
             return next(new BadRequestError(error.message))
         }
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID товара'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID РЎвЂљР С•Р Р†Р В°РЎР‚Р В°'))
         }
         if (error instanceof Error && error.message.includes('E11000')) {
             return next(
-                new ConflictError('Товар с таким заголовком уже существует')
+                new ConflictError('Р СћР С•Р Р†Р В°РЎР‚ РЎРѓ РЎвЂљР В°Р С”Р С‘Р С Р В·Р В°Р С–Р С•Р В»Р С•Р Р†Р С”Р С•Р С РЎС“Р В¶Р Вµ РЎРѓРЎС“РЎвЂ°Р ВµРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ')
             )
         }
         return next(error)
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // DELETE /product
 const deleteProduct = async (
     req: Request,
@@ -130,12 +132,12 @@ const deleteProduct = async (
     try {
         const { productId } = req.params
         const product = await Product.findByIdAndDelete(productId).orFail(
-            () => new NotFoundError('Нет товара по заданному id')
+            () => new NotFoundError('Р СњР ВµРЎвЂљ РЎвЂљР С•Р Р†Р В°РЎР‚Р В° Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id')
         )
         return res.send(product)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID товара'))
+            return next(new BadRequestError('Р СџР ВµРЎР‚Р ВµР Т‘Р В°Р Р… Р Р…Р Вµ Р Р†Р В°Р В»Р С‘Р Т‘Р Р…РЎвЂ№Р в„– ID РЎвЂљР С•Р Р†Р В°РЎР‚Р В°'))
         }
         return next(error)
     }

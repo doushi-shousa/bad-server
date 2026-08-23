@@ -57,7 +57,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
         }
         if (error instanceof Error && error.message.includes('E11000')) {
             return next(
-                new ConflictError('Пользователь с таким email уже существует')
+                new ConflictError('РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј email СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚')
             )
         }
         return next(error)
@@ -75,7 +75,7 @@ const getCurrentUser = async (
         const user = await User.findById(userId).orFail(
             () =>
                 new NotFoundError(
-                    'Пользователь по заданному id отсутствует в базе'
+                    'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                 )
         )
         res.json({ user, success: true })
@@ -84,7 +84,7 @@ const getCurrentUser = async (
     }
 }
 
-// Можно лучше: вынести общую логику получения данных из refresh токена
+// РњРѕР¶РЅРѕ Р»СѓС‡С€Рµ: РІС‹РЅРµСЃС‚Рё РѕР±С‰СѓСЋ Р»РѕРіРёРєСѓ РїРѕР»СѓС‡РµРЅРёСЏ РґР°РЅРЅС‹С… РёР· refresh С‚РѕРєРµРЅР°
 const deleteRefreshTokenInUser = async (
     req: Request,
     _res: Response,
@@ -94,7 +94,7 @@ const deleteRefreshTokenInUser = async (
     const rfTkn = cookies[REFRESH_TOKEN.cookie.name]
 
     if (!rfTkn) {
-        throw new UnauthorizedError('Не валидный токен')
+        throw new UnauthorizedError('РќРµ РІР°Р»РёРґРЅС‹Р№ С‚РѕРєРµРЅ')
     }
 
     const decodedRefreshTkn = jwt.verify(
@@ -103,7 +103,7 @@ const deleteRefreshTokenInUser = async (
     ) as JwtPayload
     const user = await User.findOne({
         _id: decodedRefreshTkn._id,
-    }).orFail(() => new UnauthorizedError('Пользователь не найден в базе'))
+    }).orFail(() => new UnauthorizedError('РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ РІ Р±Р°Р·Рµ'))
 
     const rTknHash = crypto
         .createHmac('sha256', REFRESH_TOKEN.secret)
@@ -117,7 +117,7 @@ const deleteRefreshTokenInUser = async (
     return user
 }
 
-// Реализация удаления токена из базы может отличаться
+// Р РµР°Р»РёР·Р°С†РёСЏ СѓРґР°Р»РµРЅРёСЏ С‚РѕРєРµРЅР° РёР· Р±Р°Р·С‹ РјРѕР¶РµС‚ РѕС‚Р»РёС‡Р°С‚СЊСЃСЏ
 // GET  /auth/logout
 const logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -165,23 +165,24 @@ const refreshAccessToken = async (
 }
 
 const getCurrentUserRoles = async (
-    req: Request,
+    _req: Request,
     res: Response,
     next: NextFunction
 ) => {
-    const userId = res.locals.user._id
     try {
-        await User.findById(userId, req.body, {
-            new: true,
-        }).orFail(
-            () =>
-                new NotFoundError(
-                    'Пользователь по заданному id отсутствует в базе'
-                )
-        )
-        res.status(200).json(res.locals.user.roles)
+        const userId = res.locals.user._id
+        const user = await User.findById(userId)
+            .select('roles')
+            .orFail(
+                () =>
+                    new NotFoundError(
+                        'Пользователь по заданному id отсутствует в базе'
+                    )
+            )
+
+        return res.status(200).json(user.roles)
     } catch (error) {
-        next(error)
+        return next(error)
     }
 }
 
@@ -191,18 +192,26 @@ const updateCurrentUser = async (
     next: NextFunction
 ) => {
     const userId = res.locals.user._id
+    const { name, email, phone } = req.body
+
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
-            new: true,
-        }).orFail(
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { name, email, phone },
+            {
+                new: true,
+                runValidators: true,
+            }
+        ).orFail(
             () =>
                 new NotFoundError(
                     'Пользователь по заданному id отсутствует в базе'
                 )
         )
-        res.status(200).json(updatedUser)
+
+        return res.status(200).json(updatedUser)
     } catch (error) {
-        next(error)
+        return next(error)
     }
 }
 

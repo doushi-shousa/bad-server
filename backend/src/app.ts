@@ -4,6 +4,7 @@ import cors from 'cors'
 import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import helmet from 'helmet'
+import mongoSanitize from 'express-mongo-sanitize'
 import mongoose from 'mongoose'
 import path from 'path'
 import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
@@ -33,6 +34,7 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true }))
 app.use(json())
+app.use(mongoSanitize())
 app.use(csrfProtection)
 
 app.options(
