@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
+import helmet from 'helmet'
 import mongoose from 'mongoose'
 import path from 'path'
 import { DB_ADDRESS } from './config'
@@ -12,6 +13,9 @@ import routes from './routes'
 
 const { PORT = 3000 } = process.env
 const app = express()
+
+app.disable('x-powered-by')
+app.use(helmet())
 
 app.use(cookieParser())
 

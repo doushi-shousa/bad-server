@@ -29,19 +29,19 @@ const ActionsButton = () => {
                 extraClass={styles.admin__button_secondary}
                 onClick={() => handleUpdateOrder(StatusType.Cancelled)}
             >
-                Отменить
+                Р В РЎвЂєР РЋРІР‚С™Р В РЎВР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰
             </Button>
             <Button
                 extraClass={styles.admin__button_secondary}
                 onClick={() => handleUpdateOrder(StatusType.Delivering)}
             >
-                Доставить
+                Р В РІР‚СњР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В Р’В°Р В Р вЂ Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰
             </Button>
             <Button
                 extraClass={styles.admin__button_secondary}
                 onClick={() => handleUpdateOrder(StatusType.Completed)}
             >
-                Завершить
+                Р В РІР‚вЂќР В Р’В°Р В Р вЂ Р В Р’ВµР РЋР вЂљР РЋРІвЂљВ¬Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰
             </Button>
         </>
     )
@@ -63,7 +63,7 @@ export default function AdminOrderDetail() {
         () => [
             {
                 key: 'customer',
-                label: 'Покупатель',
+                label: 'Р В РЎСџР В РЎвЂўР В РЎвЂќР РЋРЎвЂњР В РЎвЂ”Р В Р’В°Р РЋРІР‚С™Р В Р’ВµР В Р’В»Р РЋР Р‰',
                 render: (dataInfo: OrderData) => (
                     <div className={styles.admin__gridCell}>
                         <span>{dataInfo.customer}</span>
@@ -75,15 +75,15 @@ export default function AdminOrderDetail() {
                     </div>
                 ),
             },
-            { key: 'payment', label: 'Способ оплаты' },
+            { key: 'payment', label: 'Р В Р Р‹Р В РЎвЂ”Р В РЎвЂўР РЋР С“Р В РЎвЂўР В Р’В± Р В РЎвЂўР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚С™Р РЋРІР‚в„–' },
             {
                 key: 'deliveryAddress',
-                label: 'Адрес доставки',
+                label: 'Р В РЎвЂ™Р В РўвЂР РЋР вЂљР В Р’ВµР РЋР С“ Р В РўвЂР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В Р’В°Р В Р вЂ Р В РЎвЂќР В РЎвЂ',
                 extraClass: styles.admin__gridRowFullWidth,
             },
             {
                 key: 'status',
-                label: 'Статус заказа',
+                label: 'Р В Р Р‹Р РЋРІР‚С™Р В Р’В°Р РЋРІР‚С™Р РЋРЎвЂњР РЋР С“ Р В Р’В·Р В Р’В°Р В РЎвЂќР В Р’В°Р В Р’В·Р В Р’В°',
                 render: (dataInfo: OrderData) => (
                     <span
                         className={clsx({
@@ -94,24 +94,20 @@ export default function AdminOrderDetail() {
                     </span>
                 ),
             },
-            { key: 'totalAmount', label: 'Сумма заказа' },
+            { key: 'totalAmount', label: 'Р В Р Р‹Р РЋРЎвЂњР В РЎВР В РЎВР В Р’В° Р В Р’В·Р В Р’В°Р В РЎвЂќР В Р’В°Р В Р’В·Р В Р’В°' },
             {
                 key: 'comment',
-                label: 'Комментарий к заказу',
+                label: 'Р В РЎв„ўР В РЎвЂўР В РЎВР В РЎВР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°Р РЋР вЂљР В РЎвЂР В РІвЂћвЂ“ Р В РЎвЂќ Р В Р’В·Р В Р’В°Р В РЎвЂќР В Р’В°Р В Р’В·Р РЋРЎвЂњ',
                 extraClass: styles.profile__gridRowFullWidth,
                 render: (dataInfo: OrderData) => (
                     <>
-                        <div
-                            dangerouslySetInnerHTML={{
-                                __html: dataInfo.comment,
-                            }}
-                        />
+                        <div>{dataInfo.comment}</div>
                     </>
                 ),
             },
             {
                 key: 'productNames',
-                label: 'Товары',
+                label: 'Р В РЎС›Р В РЎвЂўР В Р вЂ Р В Р’В°Р РЋР вЂљР РЋРІР‚в„–',
                 render: (dataInfo: OrderData) => (
                     <ul className={styles.admin__dataList}>
                         {dataInfo.productNames.map(
@@ -124,7 +120,7 @@ export default function AdminOrderDetail() {
                 extraClass: styles.admin__gridRowFullWidth,
             },
         ],
-        [orderData]
+        [navigate, orderData]
     )
 
     if (!orderData) {
@@ -133,8 +129,8 @@ export default function AdminOrderDetail() {
 
     return (
         <DetailInfo
-            header={`Заказ № ${orderData.orderNumber}`}
-            subheader={`от ${format(new Date(orderData.createdAt), 'dd.MM.yyyy')}`}
+            header={`Р В РІР‚вЂќР В Р’В°Р В РЎвЂќР В Р’В°Р В Р’В· Р Р†РІР‚С›РІР‚вЂњ ${orderData.orderNumber}`}
+            subheader={`Р В РЎвЂўР РЋРІР‚С™ ${format(new Date(orderData.createdAt), 'dd.MM.yyyy')}`}
             data={adapterOrderFromServer(orderData)}
             headers={orderHeaders}
             actions={[ActionsButton]}

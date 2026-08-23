@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import sanitizeHtml from 'sanitize-html'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
@@ -177,14 +178,14 @@ export const getOrdersCurrentUser = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Пользователь по заданному id отсутствует в базе'
+                        'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
 
         let orders = user.orders as unknown as IOrder[]
 
         if (search) {
-            // если не экранировать то получаем Invalid regular expression: /+1/i: Nothing to repeat
+            // РµСЃР»Рё РЅРµ СЌРєСЂР°РЅРёСЂРѕРІР°С‚СЊ С‚Рѕ РїРѕР»СѓС‡Р°РµРј Invalid regular expression: /+1/i: Nothing to repeat
             const searchRegex = new RegExp(search as string, 'i')
             const searchNumber = Number(search)
             const products = await Product.find({ title: searchRegex })
@@ -237,13 +238,13 @@ export const getOrderByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
         }
         return next(error)
     }
@@ -263,19 +264,19 @@ export const getOrderCurrentUserByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
         if (!order.customer._id.equals(userId)) {
-            // Если нет доступа не возвращаем 403, а отдаем 404
+            // Р•СЃР»Рё РЅРµС‚ РґРѕСЃС‚СѓРїР° РЅРµ РІРѕР·РІСЂР°С‰Р°РµРј 403, Р° РѕС‚РґР°РµРј 404
             return next(
-                new NotFoundError('Заказ по заданному id отсутствует в базе')
+                new NotFoundError('Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ')
             )
         }
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
         }
         return next(error)
     }
@@ -297,17 +298,22 @@ export const createOrder = async (
         items.forEach((id: Types.ObjectId) => {
             const product = products.find((p) => p._id.equals(id))
             if (!product) {
-                throw new BadRequestError(`Товар с id ${id} не найден`)
+                throw new BadRequestError(`РўРѕРІР°СЂ СЃ id ${id} РЅРµ РЅР°Р№РґРµРЅ`)
             }
             if (product.price === null) {
-                throw new BadRequestError(`Товар с id ${id} не продается`)
+                throw new BadRequestError(`РўРѕРІР°СЂ СЃ id ${id} РЅРµ РїСЂРѕРґР°РµС‚СЃСЏ`)
             }
             return basket.push(product)
         })
         const totalBasket = basket.reduce((a, c) => a + c.price, 0)
         if (totalBasket !== total) {
-            return next(new BadRequestError('Неверная сумма заказа'))
+            return next(new BadRequestError('РќРµРІРµСЂРЅР°СЏ СЃСѓРјРјР° Р·Р°РєР°Р·Р°'))
         }
+
+        const sanitizedComment = sanitizeHtml(comment || '', {
+            allowedTags: [],
+            allowedAttributes: {},
+        })
 
         const newOrder = new Order({
             totalAmount: total,
@@ -315,7 +321,7 @@ export const createOrder = async (
             payment,
             phone,
             email,
-            comment,
+            comment: sanitizedComment,
             customer: userId,
             deliveryAddress: address,
         })
@@ -347,7 +353,7 @@ export const updateOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
             .populate(['customer', 'products'])
@@ -357,7 +363,7 @@ export const updateOrder = async (
             return next(new BadRequestError(error.message))
         }
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
         }
         return next(error)
     }
@@ -374,14 +380,14 @@ export const deleteOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р—Р°РєР°Р· РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ id РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РІ Р±Р°Р·Рµ'
                     )
             )
             .populate(['customer', 'products'])
         return res.status(200).json(deletedOrder)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('РџРµСЂРµРґР°РЅ РЅРµ РІР°Р»РёРґРЅС‹Р№ ID Р·Р°РєР°Р·Р°'))
         }
         return next(error)
     }
