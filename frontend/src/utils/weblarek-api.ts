@@ -34,6 +34,22 @@ class Api {
     private readonly baseUrl: string
     protected options: RequestInit
 
+    private async ensureCsrfToken() {
+        const existingToken = getCookie('csrfToken')
+
+        if (existingToken) {
+            return existingToken
+        }
+
+        const response = await fetch(`${this.baseUrl}/auth/csrf`, {
+            method: 'GET',
+            credentials: 'include',
+        })
+        const data = await this.handleResponse<{ csrfToken: string }>(response)
+
+        return data.csrfToken
+    }
+
     constructor(baseUrl: string, options: RequestInit = {}) {
         this.baseUrl = baseUrl
         this.options = {
@@ -55,9 +71,19 @@ class Api {
 
     protected async request<T>(endpoint: string, options: RequestInit) {
         try {
+            const method = (options.method || 'GET').toUpperCase()
+            const isUnsafe = !['GET', 'HEAD', 'OPTIONS'].includes(method)
+            const csrfToken = isUnsafe ? await this.ensureCsrfToken() : undefined
+
             const res = await fetch(`${this.baseUrl}${endpoint}`, {
                 ...this.options,
                 ...options,
+                credentials: 'include',
+                headers: {
+                    ...this.options.headers,
+                    ...options.headers,
+                    ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+                },
             })
             return await this.handleResponse<T>(res)
         } catch (error) {
@@ -67,7 +93,7 @@ class Api {
 
     private refreshToken = () => {
         return this.request<UserResponseToken>('/auth/token', {
-            method: 'GET',
+            method: 'POST',
             credentials: 'include',
         })
     }
@@ -293,7 +319,7 @@ export class WebLarekAPI extends Api implements IWebLarekAPI {
 
     logoutUser = () => {
         return this.request<ServerResponse<unknown>>('/auth/logout', {
-            method: 'GET',
+            method: 'POST',
             credentials: 'include',
         })
     }
