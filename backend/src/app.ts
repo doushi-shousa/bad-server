@@ -10,6 +10,7 @@ import path from 'path'
 import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import { csrfProtection } from './middlewares/csrf'
 import errorHandler from './middlewares/error-handler'
+import { globalRateLimiter } from './middlewares/rate-limit'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 
@@ -18,6 +19,7 @@ const app = express()
 
 app.disable('x-powered-by')
 app.use(helmet())
+app.use(globalRateLimiter)
 
 app.use(cookieParser())
 
@@ -32,8 +34,8 @@ app.use(
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
-app.use(urlencoded({ extended: true }))
-app.use(json())
+app.use(urlencoded({ extended: true, limit: '100kb', parameterLimit: 100 }))
+app.use(json({ limit: '100kb' }))
 app.use(mongoSanitize())
 app.use(csrfProtection)
 
