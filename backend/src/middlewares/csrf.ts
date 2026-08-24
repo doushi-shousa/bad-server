@@ -4,6 +4,7 @@ import { CSRF_SECRET } from '../config'
 import ForbiddenError from '../errors/forbidden-error'
 
 const CSRF_COOKIE = 'csrfToken'
+const TEST_CSRF_COOKIE = '_csrf'
 const CSRF_HEADER = 'x-csrf-token'
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 
@@ -35,12 +36,15 @@ const isValidSignedToken = (token: string) => {
 const issueCsrfToken = (_req: Request, res: Response) => {
     const token = createToken()
 
-    res.cookie(CSRF_COOKIE, token, {
+    const cookieOptions = {
         httpOnly: false,
-        sameSite: 'strict',
+        sameSite: 'strict' as const,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
-    })
+    }
+
+    res.cookie(CSRF_COOKIE, token, cookieOptions)
+    res.cookie(TEST_CSRF_COOKIE, token, cookieOptions)
 
     return res.status(200).json({ csrfToken: token })
 }
@@ -54,7 +58,8 @@ const csrfProtection = (
         return next()
     }
 
-    const cookieToken = req.cookies?.[CSRF_COOKIE]
+    const cookieToken =
+        req.cookies?.[TEST_CSRF_COOKIE] ?? req.cookies?.[CSRF_COOKIE]
     const headerToken = req.header(CSRF_HEADER)
 
     if (
@@ -63,14 +68,14 @@ const csrfProtection = (
         !isValidSignedToken(cookieToken) ||
         cookieToken.length !== headerToken.length
     ) {
-        return next(new ForbiddenError('Невалидный CSRF-токен'))
+        return next(new ForbiddenError('РќРµРІР°Р»РёРґРЅС‹Р№ CSRF-С‚РѕРєРµРЅ'))
     }
 
     const cookieBuffer = Buffer.from(cookieToken)
     const headerBuffer = Buffer.from(headerToken)
 
     if (!crypto.timingSafeEqual(cookieBuffer, headerBuffer)) {
-        return next(new ForbiddenError('Невалидный CSRF-токен'))
+        return next(new ForbiddenError('РќРµРІР°Р»РёРґРЅС‹Р№ CSRF-С‚РѕРєРµРЅ'))
     }
 
     return next()
