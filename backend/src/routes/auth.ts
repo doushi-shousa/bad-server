@@ -16,6 +16,7 @@ import { issueCsrfToken } from '../middlewares/csrf'
 const authRouter = Router()
 
 authRouter.get('/csrf', issueCsrfToken)
+authRouter.get('/csrf-token', issueCsrfToken)
 
 authRouter.get('/user', auth, getCurrentUser)
 authRouter.patch('/me', auth, validateUserUpdateBody, updateCurrentUser)
