@@ -11,7 +11,7 @@ const commonOptions = {
 export const globalRateLimiter = rateLimit({
     ...commonOptions,
     windowMs: 60 * 1000,
-    limit: 300,
+    limit: 20,
 })
 
 export const authRateLimiter = rateLimit({
