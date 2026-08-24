@@ -2,7 +2,7 @@ import { Joi, celebrate } from 'celebrate'
 import { Types } from 'mongoose'
 
 // eslint-disable-next-line no-useless-escape
-export const phoneRegExp = /^(\+\d+)?(?:\s|-?|\(?\d+\)?)+$/
+export const phoneRegExp = /^(?=.{7,20}$)\+?[0-9 ()-]+$/
 
 export enum PaymentType {
     Card = 'card',
@@ -174,7 +174,7 @@ export const validateOrderFilters = celebrate({
     query: Joi.object()
         .keys({
             page: Joi.number().integer().min(1),
-            limit: Joi.number().integer().min(1).max(100),
+            limit: Joi.number().integer().min(1),
             sortField: Joi.string().valid(
                 'createdAt',
                 'orderNumber',
@@ -196,7 +196,7 @@ export const validateCustomerFilters = celebrate({
     query: Joi.object()
         .keys({
             page: Joi.number().integer().min(1),
-            limit: Joi.number().integer().min(1).max(100),
+            limit: Joi.number().integer().min(1),
             sortField: Joi.string().valid(
                 'createdAt',
                 'lastOrderDate',

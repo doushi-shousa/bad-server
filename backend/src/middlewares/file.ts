@@ -1,7 +1,8 @@
 import { Request, Express } from 'express'
 import multer, { FileFilterCallback } from 'multer'
 import { mkdirSync } from 'fs'
-import { join } from 'path'
+import { join, extname } from 'path'
+import { randomBytes } from 'crypto'
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
@@ -29,7 +30,11 @@ const storage = multer.diskStorage({
         file: Express.Multer.File,
         cb: FileNameCallback
     ) => {
-        cb(null, file.originalname)
+        const extension = extname(file.originalname)
+            .toLowerCase()
+            .replace(/[^a-z0-9.]/g, '')
+        const uniqueName = `${Date.now()}-${randomBytes(8).toString('hex')}${extension}`
+        cb(null, uniqueName)
     },
 })
 
