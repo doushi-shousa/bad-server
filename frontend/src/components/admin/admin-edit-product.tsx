@@ -71,7 +71,7 @@ export default function AdminEditProduct() {
                 title: currentProduct.title,
             })
         }
-    }, [currentProduct])
+    }, [currentProduct, setValuesForm])
 
     const handleUpdateProduct = async () => {
         if (!selectedCategory) {
@@ -114,15 +114,15 @@ export default function AdminEditProduct() {
                 onChange={handleChange}
                 name='title'
                 type='text'
-                placeholder='Придумайте название'
-                label='Название'
+                placeholder='РџСЂРёРґСѓРјР°Р№С‚Рµ РЅР°Р·РІР°РЅРёРµ'
+                label='РќР°Р·РІР°РЅРёРµ'
                 required
                 error={errors.title}
             />
             <Select
                 options={CATEGORY_TYPES}
                 selected={selectedCategory}
-                placeholder='Выберите категорию'
+                placeholder='Р’С‹Р±РµСЂРёС‚Рµ РєР°С‚РµРіРѕСЂРёСЋ'
                 onChange={setSelectedCategory}
             />
             <Input
@@ -130,8 +130,8 @@ export default function AdminEditProduct() {
                 onChange={handleChange}
                 component='textarea'
                 name='description'
-                placeholder='Введите описание'
-                label='Описание'
+                placeholder='Р’РІРµРґРёС‚Рµ РѕРїРёСЃР°РЅРёРµ'
+                label='РћРїРёСЃР°РЅРёРµ'
                 required
                 error={errors.description}
             />
@@ -141,28 +141,28 @@ export default function AdminEditProduct() {
                 onChange={handleChange}
                 type='number'
                 name='price'
-                placeholder='Введите стоимость'
-                label='Стоимость (в синапсах)'
+                placeholder='Р’РІРµРґРёС‚Рµ СЃС‚РѕРёРјРѕСЃС‚СЊ'
+                label='РЎС‚РѕРёРјРѕСЃС‚СЊ (РІ СЃРёРЅР°РїСЃР°С…)'
                 error={errors.description}
             />
             <FileInput
                 onChange={handleFileChange}
                 extraClass={styles.admin__file}
                 inputRef={fileRef}
-                label='Заменить изображение'
+                label='Р—Р°РјРµРЅРёС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ'
                 accept='image/*,.png,.jpeg,.jpg,.svg'
                 fileName={currentProduct?.image.originalName}
             />
             <div className={styles.admin__buttons}>
                 <Button type='submit' disabled={!isValidForm}>
-                    Сохранить
+                    РЎРѕС…СЂР°РЅРёС‚СЊ
                 </Button>
                 <Button
                     onClick={handleDeleteProduct}
                     type='button'
                     extraClass={styles.admin__button_alt}
                 >
-                    Удалить товар
+                    РЈРґР°Р»РёС‚СЊ С‚РѕРІР°СЂ
                 </Button>
             </div>
         </Form>

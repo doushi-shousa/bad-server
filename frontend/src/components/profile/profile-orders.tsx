@@ -5,7 +5,6 @@ import TableRow from '@components/table/table-row'
 import { OrderDataList } from '@slices/orders/type'
 import { profileOrdersSelector } from '@slices/profile-orders'
 import { fetchOrdersMeWithFilters } from '@slices/profile-orders/thunk'
-import { useDispatch } from '@store/hooks'
 import clsx from 'clsx'
 import { ChangeEvent, FormEvent, useCallback, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
@@ -15,7 +14,6 @@ import usePagination from '../pagination/helpers/usePagination'
 import styles from './profile.module.scss'
 
 export default function ProfileOrders() {
-    const dispatch = useDispatch()
     const location = useLocation()
     // const orders = useSelector(profileOrdersSelector.selectProfileOrders);
     const [searchParams, setSearchParams] = useSearchParams()
@@ -38,7 +36,7 @@ export default function ProfileOrders() {
 
     const orderColumns = [
         {
-            title: '№',
+            title: 'в„–',
             extraClassHeaderCell: styles.profile__tableCellSmall,
             extraClassTableCell: styles.profile__tableCellSmall,
             dataIndex: 'orderNumber',
@@ -50,7 +48,7 @@ export default function ProfileOrders() {
             ),
         },
         {
-            title: 'Название',
+            title: 'РќР°Р·РІР°РЅРёРµ',
             extraClassHeaderCell: styles.profile__tableCellBig,
             extraClassTableCell: styles.profile__tableCellBig,
             dataIndex: 'productNames',
@@ -61,13 +59,13 @@ export default function ProfileOrders() {
                     {row.productNames.length > 1 && (
                         <span
                             className={styles.profile__tableCellSubtitle}
-                        >{` +${row.productNames.length - 1} товар`}</span>
+                        >{` +${row.productNames.length - 1} С‚РѕРІР°СЂ`}</span>
                     )}
                 </span>
             ),
         },
         {
-            title: 'Статус',
+            title: 'РЎС‚Р°С‚СѓСЃ',
             dataIndex: 'status',
             key: 'status',
             render: (row: OrderDataList) => (
@@ -81,7 +79,7 @@ export default function ProfileOrders() {
             ),
         },
         {
-            title: 'Стоимость',
+            title: 'РЎС‚РѕРёРјРѕСЃС‚СЊ',
             dataIndex: 'totalAmount',
             key: 'totalAmount',
         },
@@ -99,7 +97,7 @@ export default function ProfileOrders() {
             })
             setSearchParams({ ...filters, search: value })
         },
-        [searchParams, dispatch, setSearchParams]
+        [searchParams, setSearchParams]
     )
 
     return (
@@ -110,7 +108,7 @@ export default function ProfileOrders() {
             )}
         >
             <div className={styles.profile__headerTitle}>
-                <h1 className={styles.profile__title}>Мои заказы</h1>
+                <h1 className={styles.profile__title}>РњРѕРё Р·Р°РєР°Р·С‹</h1>
             </div>
             <form
                 className={styles.profile__formSearch}
@@ -121,9 +119,9 @@ export default function ProfileOrders() {
                     extraClassLabel={styles.profile__searchLabel}
                     extraClass={styles.profile__searchInput}
                     value={searchOrder}
-                    placeholder='Введите номер заказа или название товара'
+                    placeholder='Р’РІРµРґРёС‚Рµ РЅРѕРјРµСЂ Р·Р°РєР°Р·Р° РёР»Рё РЅР°Р·РІР°РЅРёРµ С‚РѕРІР°СЂР°'
                 />
-                <Button>Найти</Button>
+                <Button>РќР°Р№С‚Рё</Button>
             </form>
             <Table columns={orderColumns} data={orders}>
                 {({ rowData, columnsData }) => {
