@@ -1,10 +1,12 @@
 import { NextFunction, Request, Response } from 'express'
 import { FilterQuery, Error as MongooseError, Types } from 'mongoose'
+import sanitizeHtml from 'sanitize-html'
 import BadRequestError from '../errors/bad-request-error'
 import NotFoundError from '../errors/not-found-error'
 import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
+import escapeRegExp from '../utils/escapeRegExp'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -28,15 +30,13 @@ export const getOrders = async (
             search,
         } = req.query
 
+        const safePage = Math.max(1, Number(page) || 1)
+        const safeLimit = Math.min(10, Math.max(1, Number(limit) || 10))
+
         const filters: FilterQuery<Partial<IOrder>> = {}
 
-        if (status) {
-            if (typeof status === 'object') {
-                Object.assign(filters, status)
-            }
-            if (typeof status === 'string') {
-                filters.status = status
-            }
+        if (typeof status === 'string') {
+            filters.status = status
         }
 
         if (totalAmountFrom) {
@@ -90,7 +90,7 @@ export const getOrders = async (
         ]
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            const searchRegex = new RegExp(escapeRegExp(search as string), 'i')
             const searchNumber = Number(search)
 
             const searchConditions: any[] = [{ 'products.title': searchRegex }]
@@ -116,8 +116,8 @@ export const getOrders = async (
 
         aggregatePipeline.push(
             { $sort: sort },
-            { $skip: (Number(page) - 1) * Number(limit) },
-            { $limit: Number(limit) },
+            { $skip: (safePage - 1) * safeLimit },
+            { $limit: safeLimit },
             {
                 $group: {
                     _id: '$_id',
@@ -133,15 +133,15 @@ export const getOrders = async (
 
         const orders = await Order.aggregate(aggregatePipeline)
         const totalOrders = await Order.countDocuments(filters)
-        const totalPages = Math.ceil(totalOrders / Number(limit))
+        const totalPages = Math.ceil(totalOrders / safeLimit)
 
         res.status(200).json({
             orders,
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: safePage,
+                pageSize: safeLimit,
             },
         })
     } catch (error) {
@@ -157,9 +157,11 @@ export const getOrdersCurrentUser = async (
     try {
         const userId = res.locals.user._id
         const { search, page = 1, limit = 5 } = req.query
+        const safePage = Math.max(1, Number(page) || 1)
+        const safeLimit = Math.min(10, Math.max(1, Number(limit) || 5))
         const options = {
-            skip: (Number(page) - 1) * Number(limit),
-            limit: Number(limit),
+            skip: (safePage - 1) * safeLimit,
+            limit: safeLimit,
         }
 
         const user = await User.findById(userId)
@@ -177,15 +179,15 @@ export const getOrdersCurrentUser = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Пользователь по заданному id отсутствует в базе'
+                        'Р  РЎСџР  РЎвЂўР  Р’В»Р РЋР Р‰Р  Р’В·Р  РЎвЂўР  Р вЂ Р  Р’В°Р РЋРІР‚С™Р  Р’ВµР  Р’В»Р РЋР Р‰ Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ'
                     )
             )
 
         let orders = user.orders as unknown as IOrder[]
 
         if (search) {
-            // если не экранировать то получаем Invalid regular expression: /+1/i: Nothing to repeat
-            const searchRegex = new RegExp(search as string, 'i')
+            // Р  Р’ВµР РЋР С“Р  Р’В»Р  РЎвЂ Р  Р вЂ¦Р  Р’Вµ Р РЋР РЉР  РЎвЂќР РЋР вЂљР  Р’В°Р  Р вЂ¦Р  РЎвЂР РЋР вЂљР  РЎвЂўР  Р вЂ Р  Р’В°Р РЋРІР‚С™Р РЋР Р‰ Р РЋРІР‚С™Р  РЎвЂў Р  РЎвЂ”Р  РЎвЂўР  Р’В»Р РЋРЎвЂњР РЋРІР‚РЋР  Р’В°Р  Р’ВµР  РЎВ Invalid regular expression: /+1/i: Nothing to repeat
+            const searchRegex = new RegExp(escapeRegExp(search as string), 'i')
             const searchNumber = Number(search)
             const products = await Product.find({ title: searchRegex })
             const productIds = products.map((product) => product._id)
@@ -205,7 +207,7 @@ export const getOrdersCurrentUser = async (
         }
 
         const totalOrders = orders.length
-        const totalPages = Math.ceil(totalOrders / Number(limit))
+        const totalPages = Math.ceil(totalOrders / safeLimit)
 
         orders = orders.slice(options.skip, options.skip + options.limit)
 
@@ -214,8 +216,8 @@ export const getOrdersCurrentUser = async (
             pagination: {
                 totalOrders,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: safePage,
+                pageSize: safeLimit,
             },
         })
     } catch (error) {
@@ -237,13 +239,13 @@ export const getOrderByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р  РІР‚вЂќР  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В· Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ'
                     )
             )
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('Р  РЎСџР  Р’ВµР РЋР вЂљР  Р’ВµР  РўвЂР  Р’В°Р  Р вЂ¦ Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ Р  Р’В°Р  Р’В»Р  РЎвЂР  РўвЂР  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ ID Р  Р’В·Р  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В·Р  Р’В°'))
         }
         return next(error)
     }
@@ -263,19 +265,19 @@ export const getOrderCurrentUserByNumber = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р  РІР‚вЂќР  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В· Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ'
                     )
             )
         if (!order.customer._id.equals(userId)) {
-            // Если нет доступа не возвращаем 403, а отдаем 404
+            // Р  РІР‚СћР РЋР С“Р  Р’В»Р  РЎвЂ Р  Р вЂ¦Р  Р’ВµР РЋРІР‚С™ Р  РўвЂР  РЎвЂўР РЋР С“Р РЋРІР‚С™Р РЋРЎвЂњР  РЎвЂ”Р  Р’В° Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ Р  РЎвЂўР  Р’В·Р  Р вЂ Р РЋР вЂљР  Р’В°Р РЋРІР‚В°Р  Р’В°Р  Р’ВµР  РЎВ 403, Р  Р’В° Р  РЎвЂўР РЋРІР‚С™Р  РўвЂР  Р’В°Р  Р’ВµР  РЎВ 404
             return next(
-                new NotFoundError('Заказ по заданному id отсутствует в базе')
+                new NotFoundError('Р  РІР‚вЂќР  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В· Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ')
             )
         }
         return res.status(200).json(order)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('Р  РЎСџР  Р’ВµР РЋР вЂљР  Р’ВµР  РўвЂР  Р’В°Р  Р вЂ¦ Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ Р  Р’В°Р  Р’В»Р  РЎвЂР  РўвЂР  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ ID Р  Р’В·Р  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В·Р  Р’В°'))
         }
         return next(error)
     }
@@ -297,17 +299,22 @@ export const createOrder = async (
         items.forEach((id: Types.ObjectId) => {
             const product = products.find((p) => p._id.equals(id))
             if (!product) {
-                throw new BadRequestError(`Товар с id ${id} не найден`)
+                throw new BadRequestError(`Р  РЎС›Р  РЎвЂўР  Р вЂ Р  Р’В°Р РЋР вЂљ Р РЋР С“ id ${id} Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ¦Р  Р’В°Р  РІвЂћвЂ“Р  РўвЂР  Р’ВµР  Р вЂ¦`)
             }
             if (product.price === null) {
-                throw new BadRequestError(`Товар с id ${id} не продается`)
+                throw new BadRequestError(`Р  РЎС›Р  РЎвЂўР  Р вЂ Р  Р’В°Р РЋР вЂљ Р РЋР С“ id ${id} Р  Р вЂ¦Р  Р’Вµ Р  РЎвЂ”Р РЋР вЂљР  РЎвЂўР  РўвЂР  Р’В°Р  Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ`)
             }
             return basket.push(product)
         })
         const totalBasket = basket.reduce((a, c) => a + c.price, 0)
         if (totalBasket !== total) {
-            return next(new BadRequestError('Неверная сумма заказа'))
+            return next(new BadRequestError('Р  РЎСљР  Р’ВµР  Р вЂ Р  Р’ВµР РЋР вЂљР  Р вЂ¦Р  Р’В°Р РЋР РЏ Р РЋР С“Р РЋРЎвЂњР  РЎВР  РЎВР  Р’В° Р  Р’В·Р  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В·Р  Р’В°'))
         }
+
+        const sanitizedComment = sanitizeHtml(comment || '', {
+            allowedTags: [],
+            allowedAttributes: {},
+        })
 
         const newOrder = new Order({
             totalAmount: total,
@@ -315,7 +322,7 @@ export const createOrder = async (
             payment,
             phone,
             email,
-            comment,
+            comment: sanitizedComment,
             customer: userId,
             deliveryAddress: address,
         })
@@ -347,7 +354,7 @@ export const updateOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р  РІР‚вЂќР  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В· Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ'
                     )
             )
             .populate(['customer', 'products'])
@@ -357,7 +364,7 @@ export const updateOrder = async (
             return next(new BadRequestError(error.message))
         }
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('Р  РЎСџР  Р’ВµР РЋР вЂљР  Р’ВµР  РўвЂР  Р’В°Р  Р вЂ¦ Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ Р  Р’В°Р  Р’В»Р  РЎвЂР  РўвЂР  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ ID Р  Р’В·Р  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В·Р  Р’В°'))
         }
         return next(error)
     }
@@ -374,14 +381,14 @@ export const deleteOrder = async (
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Заказ по заданному id отсутствует в базе'
+                        'Р  РІР‚вЂќР  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В· Р  РЎвЂ”Р  РЎвЂў Р  Р’В·Р  Р’В°Р  РўвЂР  Р’В°Р  Р вЂ¦Р  Р вЂ¦Р  РЎвЂўР  РЎВР РЋРЎвЂњ id Р  РЎвЂўР РЋРІР‚С™Р РЋР С“Р РЋРЎвЂњР РЋРІР‚С™Р РЋР С“Р РЋРІР‚С™Р  Р вЂ Р РЋРЎвЂњР  Р’ВµР РЋРІР‚С™ Р  Р вЂ  Р  Р’В±Р  Р’В°Р  Р’В·Р  Р’Вµ'
                     )
             )
             .populate(['customer', 'products'])
         return res.status(200).json(deletedOrder)
     } catch (error) {
         if (error instanceof MongooseError.CastError) {
-            return next(new BadRequestError('Передан не валидный ID заказа'))
+            return next(new BadRequestError('Р  РЎСџР  Р’ВµР РЋР вЂљР  Р’ВµР  РўвЂР  Р’В°Р  Р вЂ¦ Р  Р вЂ¦Р  Р’Вµ Р  Р вЂ Р  Р’В°Р  Р’В»Р  РЎвЂР  РўвЂР  Р вЂ¦Р РЋРІР‚в„–Р  РІвЂћвЂ“ ID Р  Р’В·Р  Р’В°Р  РЎвЂќР  Р’В°Р  Р’В·Р  Р’В°'))
         }
         return next(error)
     }

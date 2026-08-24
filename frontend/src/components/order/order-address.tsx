@@ -35,7 +35,7 @@ export function OrderAddress() {
             address: orderPersistData.address,
             payment: PaymentType.Online,
         })
-    }, [orderPersistData])
+    }, [orderPersistData, setValuesForm])
 
     const nextStep = () => {
         setInfo(values)
@@ -57,7 +57,7 @@ export function OrderAddress() {
                         onChange={handleChange}
                         checked={values.payment === PaymentType.Online}
                         value={PaymentType.Online}
-                        label='Онлайн'
+                        label='РћРЅР»Р°Р№РЅ'
                         type='radio'
                         name='payment'
                         extraClass={styles.order__button_alt}
@@ -67,7 +67,7 @@ export function OrderAddress() {
                         onChange={handleChange}
                         checked={values.payment === PaymentType.Card}
                         value={PaymentType.Card}
-                        label='При получении'
+                        label='РџСЂРё РїРѕР»СѓС‡РµРЅРёРё'
                         type='radio'
                         name='payment'
                         extraClass={styles.order__button_alt}
@@ -80,15 +80,15 @@ export function OrderAddress() {
                 onChange={handleChange}
                 name='address'
                 type='text'
-                placeholder='Введите адрес'
-                label='Адрес доставки'
+                placeholder='Р’РІРµРґРёС‚Рµ Р°РґСЂРµСЃ'
+                label='РђРґСЂРµСЃ РґРѕСЃС‚Р°РІРєРё'
                 required
                 minLength={1}
                 error={errors.address}
             />
             <div className={styles.order__buttons}>
                 <Button type='submit' onClick={nextStep} disabled={!isValid}>
-                    Далее
+                    Р”Р°Р»РµРµ
                 </Button>
             </div>
         </Form>

@@ -27,7 +27,10 @@ export const registerUser = createAsyncThunk<
     UserRegisterBodyDto
 >(`user/registerUser`, async (dataUser, { extra: api }) => {
     const data = await api.registerUser(dataUser)
-    setCookie('accessToken', data.accessToken)
+    setCookie('accessToken', data.accessToken, {
+        sameSite: 'Strict',
+        secure: window.location.protocol === 'https:',
+    })
     return data
 })
 
@@ -35,7 +38,10 @@ export const loginUser = createAsyncThunk<UserResponseToken, UserLoginBodyDto>(
     `user/loginUser`,
     async (dataUser, { extra: api }) => {
         const data = await api.loginUser(dataUser)
-        setCookie('accessToken', data.accessToken)
+        setCookie('accessToken', data.accessToken, {
+        sameSite: 'Strict',
+        secure: window.location.protocol === 'https:',
+    })
         return data
     }
 )
@@ -45,7 +51,6 @@ export const logoutUser = createAsyncThunk<ServerResponse<unknown>, void>(
     async (_, { extra: api }) => {
         const data = await api.logoutUser()
         setCookie('accessToken', '', { expires: new Date(0) })
-        setCookie('refreshToken', '', { expires: new Date(0) })
         return data
     }
 )

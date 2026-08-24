@@ -33,12 +33,12 @@ export function OrderContacts() {
         )
 
     useEffect(() => {
-        // восстанавливаем значение формы из стора
+        // РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РµРЅРёРµ С„РѕСЂРјС‹ РёР· СЃС‚РѕСЂР°
         setValuesForm({
             email: orderPersistData.email,
             phone: orderPersistData.phone,
         })
-    }, [orderPersistData])
+    }, [orderPersistData, setValuesForm])
 
     const handleEditInputChange = (value: string) => {
         setValuesForm({ ...values, comment: value })
@@ -47,7 +47,7 @@ export function OrderContacts() {
     const handleFormSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setInfo(values)
-        // т.к. на момент отправки запроса данные введенные в поля еще не записаны в store, добавляем в запрос их вручную
+        // С‚.Рє. РЅР° РјРѕРјРµРЅС‚ РѕС‚РїСЂР°РІРєРё Р·Р°РїСЂРѕСЃР° РґР°РЅРЅС‹Рµ РІРІРµРґРµРЅРЅС‹Рµ РІ РїРѕР»СЏ РµС‰Рµ РЅРµ Р·Р°РїРёСЃР°РЅС‹ РІ store, РґРѕР±Р°РІР»СЏРµРј РІ Р·Р°РїСЂРѕСЃ РёС… РІСЂСѓС‡РЅСѓСЋ
         createOrder({ ...orderPersistData, ...values })
             .unwrap()
             .then((dataResponse) => {
@@ -76,7 +76,7 @@ export function OrderContacts() {
                 onChange={handleChange}
                 name='email'
                 type='email'
-                placeholder='Введите Email'
+                placeholder='Р’РІРµРґРёС‚Рµ Email'
                 label='Email'
                 required
                 error={errors.email}
@@ -88,7 +88,7 @@ export function OrderContacts() {
                 type='tel'
                 placeholder='+7 (999) 999-99-99'
                 mask='+7 (999) 999 99 99'
-                label='Телефон'
+                label='РўРµР»РµС„РѕРЅ'
                 required
                 error={errors.phone}
                 component={InputMask}
@@ -110,10 +110,10 @@ export function OrderContacts() {
                     }}
                     replace
                 >
-                    Назад
+                    РќР°Р·Р°Рґ
                 </Button>
                 <Button type='submit' disabled={!isValid}>
-                    Оплатить
+                    РћРїР»Р°С‚РёС‚СЊ
                 </Button>
             </div>
         </Form>

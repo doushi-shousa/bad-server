@@ -14,7 +14,7 @@ import styles from './profile.module.scss'
 
 const CloseButton = () => {
     const navigate = useNavigate()
-    return <Button onClick={() => navigate(-1)}>Понятно!</Button>
+    return <Button onClick={() => navigate(-1)}>Р СџР С•Р Р…РЎРЏРЎвЂљР Р…Р С•!</Button>
 }
 
 export default function ProfileOrderDetail() {
@@ -33,7 +33,7 @@ export default function ProfileOrderDetail() {
         () => [
             {
                 key: 'productNames',
-                label: 'Товары',
+                label: 'Р СћР С•Р Р†Р В°РЎР‚РЎвЂ№',
                 render: (dataInfo: OrderData) => (
                     <ul className={styles.profile__dataList}>
                         {dataInfo.productNames.map(
@@ -44,10 +44,10 @@ export default function ProfileOrderDetail() {
                     </ul>
                 ),
             },
-            { key: 'totalAmount', label: 'Стоимость' },
+            { key: 'totalAmount', label: 'Р РЋРЎвЂљР С•Р С‘Р СР С•РЎРѓРЎвЂљРЎРЉ' },
             {
                 key: 'status',
-                label: 'Статус заказа',
+                label: 'Р РЋРЎвЂљР В°РЎвЂљРЎС“РЎРѓ Р В·Р В°Р С”Р В°Р В·Р В°',
                 render: (dataInfo: OrderData) => (
                     <span
                         className={clsx({
@@ -58,26 +58,22 @@ export default function ProfileOrderDetail() {
                     </span>
                 ),
             },
-            { key: 'payment', label: 'Способ оплаты' },
+            { key: 'payment', label: 'Р РЋР С—Р С•РЎРѓР С•Р В± Р С•Р С—Р В»Р В°РЎвЂљРЎвЂ№' },
             {
                 key: 'deliveryAddress',
-                label: 'Адрес доставки',
+                label: 'Р С’Р Т‘РЎР‚Р ВµРЎРѓ Р Т‘Р С•РЎРѓРЎвЂљР В°Р Р†Р С”Р С‘',
                 extraClass: styles.profile__gridRowFullWidth,
             },
             {
                 key: 'comment',
-                label: 'Ваш комментарий к заказу',
+                label: 'Р вЂ™Р В°РЎв‚¬ Р С”Р С•Р СР СР ВµР Р…РЎвЂљР В°РЎР‚Р С‘Р в„– Р С” Р В·Р В°Р С”Р В°Р В·РЎС“',
                 extraClass: styles.profile__gridRowFullWidth,
                 render: (dataInfo: OrderData) => (
                     <>
                         {dataInfo.comment ? (
-                            <div
-                                dangerouslySetInnerHTML={{
-                                    __html: dataInfo.comment,
-                                }}
-                            />
+                            <div>{dataInfo.comment}</div>
                         ) : (
-                            'Комментариев нет'
+                            'Р С™Р С•Р СР СР ВµР Р…РЎвЂљР В°РЎР‚Р С‘Р ВµР Р† Р Р…Р ВµРЎвЂљ'
                         )}
                     </>
                 ),
@@ -92,8 +88,8 @@ export default function ProfileOrderDetail() {
 
     return (
         <DetailInfo
-            header={`Заказ № ${orderData.orderNumber}`}
-            subheader={`от ${format(new Date(orderData.createdAt), 'dd.MM.yyyy')}`}
+            header={`Р вЂ”Р В°Р С”Р В°Р В· РІвЂћвЂ“ ${orderData.orderNumber}`}
+            subheader={`Р С•РЎвЂљ ${format(new Date(orderData.createdAt), 'dd.MM.yyyy')}`}
             data={adapterOrderFromServer(orderData)}
             headers={orderHeaders}
             actions={[CloseButton]}

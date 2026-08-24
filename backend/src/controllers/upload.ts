@@ -7,6 +7,9 @@ export const uploadFile = async (
     res: Response,
     next: NextFunction
 ) => {
+    if (req.file && req.file.size <= 2 * 1024) {
+        return res.status(400).json({ message: 'File is too small' })
+    }
     if (!req.file) {
         return next(new BadRequestError('Файл не загружен'))
     }

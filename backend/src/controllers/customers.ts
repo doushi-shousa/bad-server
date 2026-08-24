@@ -3,8 +3,9 @@ import { FilterQuery } from 'mongoose'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
+import escapeRegExp from '../utils/escapeRegExp'
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // eslint-disable-next-line max-len
 // Get GET /customers?page=2&limit=5&sort=totalAmount&order=desc&registrationDateFrom=2023-01-01&registrationDateTo=2023-12-31&lastOrderDateFrom=2023-01-01&lastOrderDateTo=2023-12-31&totalAmountFrom=100&totalAmountTo=1000&orderCountFrom=1&orderCountTo=10
 export const getCustomers = async (
@@ -28,6 +29,9 @@ export const getCustomers = async (
             orderCountTo,
             search,
         } = req.query
+
+        const safePage = Math.max(1, Number(page) || 1)
+        const safeLimit = Math.min(10, Math.max(1, Number(limit) || 10))
 
         const filters: FilterQuery<Partial<IUser>> = {}
 
@@ -92,7 +96,7 @@ export const getCustomers = async (
         }
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            const searchRegex = new RegExp(escapeRegExp(search as string), 'i')
             const orders = await Order.find(
                 {
                     $or: [{ deliveryAddress: searchRegex }],
@@ -116,8 +120,8 @@ export const getCustomers = async (
 
         const options = {
             sort,
-            skip: (Number(page) - 1) * Number(limit),
-            limit: Number(limit),
+            skip: (safePage - 1) * safeLimit,
+            limit: safeLimit,
         }
 
         const users = await User.find(filters, null, options).populate([
@@ -137,15 +141,15 @@ export const getCustomers = async (
         ])
 
         const totalUsers = await User.countDocuments(filters)
-        const totalPages = Math.ceil(totalUsers / Number(limit))
+        const totalPages = Math.ceil(totalUsers / safeLimit)
 
         res.status(200).json({
             customers: users,
             pagination: {
                 totalUsers,
                 totalPages,
-                currentPage: Number(page),
-                pageSize: Number(limit),
+                currentPage: safePage,
+                pageSize: safeLimit,
             },
         })
     } catch (error) {
@@ -153,7 +157,7 @@ export const getCustomers = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // Get /customers/:id
 export const getCustomerById = async (
     req: Request,
@@ -171,7 +175,7 @@ export const getCustomerById = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // Patch /customers/:id
 export const updateCustomer = async (
     req: Request,
@@ -179,17 +183,19 @@ export const updateCustomer = async (
     next: NextFunction
 ) => {
     try {
+        const { name, email, phone } = req.body
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            { name, email, phone },
             {
                 new: true,
+                runValidators: true,
             }
         )
             .orFail(
                 () =>
                     new NotFoundError(
-                        'Пользователь по заданному id отсутствует в базе'
+                        'Р СџР С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЉ Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                     )
             )
             .populate(['orders', 'lastOrder'])
@@ -199,7 +205,7 @@ export const updateCustomer = async (
     }
 }
 
-// TODO: Добавить guard admin
+// TODO: Р вЂќР С•Р В±Р В°Р Р†Р С‘РЎвЂљРЎРЉ guard admin
 // Delete /customers/:id
 export const deleteCustomer = async (
     req: Request,
@@ -210,7 +216,7 @@ export const deleteCustomer = async (
         const deletedUser = await User.findByIdAndDelete(req.params.id).orFail(
             () =>
                 new NotFoundError(
-                    'Пользователь по заданному id отсутствует в базе'
+                    'Р СџР С•Р В»РЎРЉР В·Р С•Р Р†Р В°РЎвЂљР ВµР В»РЎРЉ Р С—Р С• Р В·Р В°Р Т‘Р В°Р Р…Р Р…Р С•Р СРЎС“ id Р С•РЎвЂљРЎРѓРЎС“РЎвЂљРЎРѓРЎвЂљР Р†РЎС“Р ВµРЎвЂљ Р Р† Р В±Р В°Р В·Р Вµ'
                 )
         )
         res.status(200).json(deletedUser)

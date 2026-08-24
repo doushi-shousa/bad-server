@@ -12,10 +12,11 @@ import {
     validateProductUpdateBody,
 } from '../middlewares/validations'
 import { Role } from '../models/user'
+import publicCache from '../middlewares/cache'
 
 const productRouter = Router()
 
-productRouter.get('/', getProducts)
+productRouter.get('/', publicCache, getProducts)
 productRouter.post(
     '/',
     auth,

@@ -3,20 +3,25 @@ import fs from 'fs'
 import path from 'path'
 
 export default function serveStatic(baseDir: string) {
-    return (req: Request, res: Response, next: NextFunction) => {
-        // Определяем полный путь к запрашиваемому файлу
-        const filePath = path.join(baseDir, req.path)
+    const resolvedBaseDir = path.resolve(baseDir)
 
-        // Проверяем, существует ли файл
-        fs.access(filePath, fs.constants.F_OK, (err) => {
-            if (err) {
-                // Файл не существует отдаем дальше мидлварам
+    return (req: Request, res: Response, next: NextFunction) => {
+        const relativePath = req.path.replace(/^[/\\]+/, '')
+        const filePath = path.resolve(resolvedBaseDir, relativePath)
+        const relativeToBase = path.relative(resolvedBaseDir, filePath)
+
+        if (relativeToBase.startsWith('..') || path.isAbsolute(relativeToBase)) {
+            return next()
+        }
+
+        fs.access(filePath, fs.constants.F_OK, (accessError) => {
+            if (accessError) {
                 return next()
             }
-            // Файл существует, отправляем его клиенту
-            return res.sendFile(filePath, (err) => {
-                if (err) {
-                    next(err)
+
+            return res.sendFile(filePath, (sendError) => {
+                if (sendError) {
+                    next(sendError)
                 }
             })
         })

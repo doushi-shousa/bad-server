@@ -20,8 +20,7 @@ interface FilterSelectedState {
 }
 interface FilterComponentProps {
     fields: Field[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onFilter: (filters: Record<string, any>) => void
+    onFilter: (filters: Record<string, unknown>) => void
     onClear: () => void
     defaultValue?: FiltersOrder | FiltersCustomers
 }
@@ -63,7 +62,7 @@ const Filter = ({
                                     key={field.name}
                                     options={field.options}
                                     selected={selects[field.name!] || null}
-                                    placeholder='Выберите статус'
+                                    placeholder='Р’С‹Р±РµСЂРёС‚Рµ СЃС‚Р°С‚СѓСЃ'
                                     onChange={(option) =>
                                         setSelects({
                                             ...selects,
@@ -111,7 +110,7 @@ const Filter = ({
                 (item) => item.value === (defaultValue as FiltersOrder)?.status
             )
             if (status) {
-                setSelects({ ...selects, status })
+                setSelects((current) => ({ ...current, status }))
             }
         }
     }, [defaultValue])
@@ -123,13 +122,13 @@ const Filter = ({
             extraClass={styles.filter}
         >
             {fields.map((field) => renderController(field))}
-            <Button type='submit'>Применить</Button>
+            <Button type='submit'>РџСЂРёРјРµРЅРёС‚СЊ</Button>
             <Button
                 type='button'
                 extraClass={styles.filter__button_alt}
                 onClick={onClear}
             >
-                Очистить
+                РћС‡РёСЃС‚РёС‚СЊ
             </Button>
         </Form>
     )
