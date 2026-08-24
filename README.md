@@ -19,5 +19,6 @@ https://github.com/doushi-shousa/bad-server
 
 - Repository: https://github.com/doushi-shousa/bad-server
 - Course: Fullstack Developer
-- Name and cohort: REPLACE BEFORE SUBMISSION
+- Name and cohort: Островский Данил, когорта 46
 - Published version: not deployed to an external server.
+
